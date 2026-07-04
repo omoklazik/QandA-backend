@@ -55,7 +55,7 @@ export class AuthService {
       });
     }
 
-    const hashed = await this.passwordHashing(password);
+    const hashed = await this.passwordHashing(password.trim());
 
     const payload = {
       firstName: firstName.toLowerCase().trim(),
