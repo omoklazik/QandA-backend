@@ -58,17 +58,15 @@ export class AuthService {
     const hashed = await this.passwordHashing(password);
 
     const payload = {
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
+      firstName: firstName.toLowerCase().trim(),
+      lastName: lastName.toLowerCase().trim(),
+      email: email.toLowerCase().trim(),
+      phoneNumber: phoneNumber.trim(),
       password: hashed,
       referredBy: referredBy && referredBy,
     };
 
     const newUser = await this.usersRepository.create(payload);
-
-    console.log('newUser:', newUser);
 
     const token = generateCode(6);
     const input = {
