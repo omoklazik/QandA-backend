@@ -123,7 +123,7 @@ export class QuestionInjectionDto {
 
   @ApiProperty({
     description: 'This is the subject name.',
-    example: 'physics',
+    example: 'english',
   })
   @IsNotEmpty({ message: 'Subject is required' })
   @IsString({ message: 'Subject is a string' })
