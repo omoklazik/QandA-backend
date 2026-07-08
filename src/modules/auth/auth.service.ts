@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,10 +13,12 @@ import { Request } from 'express';
 import { Model, Types } from 'mongoose';
 import { JwtUser } from '../../common/types/jwt-user.type';
 import { generateCode } from '../../common/utils/code';
+import { addDays } from '../../common/utils/helper';
 import { MailService } from '../../mail/mail.service';
 import { RefreshTokensService } from '../refresh-tokens/refresh-tokens.service';
 import { TokensRepository } from '../tokens/repositories/tokens.repository';
 import { TokenPurpose } from '../tokens/schemas/token.schema';
+import { UserSessionService } from '../user-session/user-session.service';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { Plan } from '../users/schemas/user.schema';
 import { WalletResponseDto } from '../wallets/dto/wallet-response.dto';
@@ -39,6 +42,8 @@ export class AuthService {
     private jwtService: JwtService,
     private tokensRepository: TokensRepository,
     private mailService: MailService,
+    private userSessionService: UserSessionService,
+
     private refreshTokensService: RefreshTokensService,
   ) {}
   async registerUser(registerUserDto: RegisterUserDto) {
@@ -145,8 +150,116 @@ export class AuthService {
     };
   }
 
+  async forceSwitch(dto: LoginDto): Promise<AuthResponseDto> {
+    const { email, password, deviceId, deviceName } = dto;
+
+    const user = await this.usersRepository.findByEmail(email);
+
+    if (!user || user === null) {
+      throw new UnauthorizedException({
+        message: 'Invalid credentials.',
+        status: 401,
+        success: false,
+      });
+    }
+
+    const hash = user?.password;
+
+    if (!hash) {
+      throw new UnauthorizedException({
+        message: 'Invalid credentials',
+        success: false,
+        status: 401,
+      });
+    }
+
+    const passwordMatch = await this.comaparePassword(password, hash);
+
+    if (passwordMatch !== true) {
+      throw new UnauthorizedException({
+        message: 'Invalid credentials.',
+        status: 401,
+        success: false,
+      });
+    }
+
+    if (user.isVerified !== true) {
+      throw new BadRequestException({
+        message: 'This endpoint is for verified email address.',
+        success: false,
+        status: 400,
+      });
+    }
+
+    const now = new Date();
+
+    if (user.lastForcedSwitchAt) {
+      const lastSwitch = user.lastForcedSwitchAt;
+
+      const nextAllowedSwitchDate = addDays(lastSwitch, 90);
+
+      if (new Date() < nextAllowedSwitchDate) {
+        throw new ForbiddenException({
+          message: `You can switch again on ${nextAllowedSwitchDate.toDateString()}`,
+          success: false,
+          status: 403,
+        });
+      }
+    }
+
+    const payload = {
+      userId: user._id.toString(),
+      deviceId,
+      deviceName,
+    };
+
+    const newSession = await this.userSessionService.forceSwitch(payload);
+
+    const refreshToken = await this.refreshTokensService.generateRefreshToken(
+      user.email,
+      user.role,
+      user._id,
+    );
+    const accessToken = await this.generateAccessTokens(
+      user.email,
+      user._id,
+      user.role,
+      user.plans,
+    );
+
+    let userWallet: WalletResponseDto | null;
+
+    userWallet = await this.walletsRepository.findWalletByUserId(
+      user._id.toString(),
+    );
+
+    if (!userWallet) {
+      userWallet = await this.walletsRepository.createWallet(
+        user._id.toString(),
+      );
+    }
+
+    const { password: _password, ...others } = user.toObject();
+
+    user.lastForcedSwitchAt = new Date();
+    await user.save();
+
+    const session = newSession;
+    return {
+      refreshToken: refreshToken.refreshToken,
+      accessToken,
+      session,
+      user: {
+        userWallet,
+        ...others,
+      },
+    };
+  }
+
   async loginUser(loginDto: LoginDto): Promise<AuthResponseDto> {
-    const { email, password } = loginDto;
+    const { email, password, deviceId, deviceName } = loginDto;
+
+    console.log('loginDto:', loginDto);
 
     const user = await this.usersRepository.findByEmail(email);
 
@@ -204,6 +317,25 @@ export class AuthService {
         success: false,
       });
     } else {
+      const userId = user._id.toString();
+
+      let session;
+
+      try {
+        session = await this.userSessionService.handleLogin({
+          userId,
+          deviceId,
+          deviceName,
+        });
+      } catch (err) {
+        if (err instanceof ConflictException) {
+          throw err; // send FORCE_SWITCH_REQUIRED to frontend
+        }
+        throw err;
+      }
+
+      // generate tokens
+
       const refreshToken = await this.refreshTokensService.generateRefreshToken(
         user.email,
         user.role,
@@ -233,6 +365,7 @@ export class AuthService {
       return {
         refreshToken: refreshToken.refreshToken,
         accessToken,
+        session,
         user: {
           userWallet,
           ...others,

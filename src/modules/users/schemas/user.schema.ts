@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types, HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
-export type UserDocument = HydratedDocument<User>
+export type UserDocument = HydratedDocument<User>;
 
 export enum Role {
   ADMIN = 'ADMIN',
@@ -33,6 +33,9 @@ export class User {
 
   @Prop({ required: true })
   firstName!: string;
+
+  @Prop({})
+  lastForcedSwitchAt?: Date;
 
   @Prop({ required: true })
   lastName!: string;

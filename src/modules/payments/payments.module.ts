@@ -1,6 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReferralsModule } from '../referrals/referrals.module';
+import { UserSessionModule } from '../user-session/user-session.module';
 import { UsersModule } from '../users/users.module';
 import { WalletsModule } from '../wallets/wallets.module';
 import { PaymentsController } from './payments.controller';
@@ -13,6 +14,7 @@ import { Payment, PaymentSchema } from './schemas/payment.schema';
   imports: [
     MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),
     UsersModule,
+    UserSessionModule,
     WalletsModule,
 
     forwardRef(() => ReferralsModule),

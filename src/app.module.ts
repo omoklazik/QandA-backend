@@ -9,18 +9,19 @@ import configuration from './config/configuration';
 import { MailModule } from './mail/mail.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PaymentGatewayModule } from './modules/payment-gateway/payment-gateway.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { QuestionsInjectionModule } from './modules/questions-injection/questions-injection.module';
 import { QuestionsModule } from './modules/questions/questions.module';
+import { ReferralsModule } from './modules/referrals/referrals.module';
 import { RefreshTokensModule } from './modules/refresh-tokens/refresh-tokens.module';
 import { SubjectsModule } from './modules/subjects/subjects.module';
 import { TokensModule } from './modules/tokens/tokens.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { UserSessionModule } from './modules/user-session/user-session.module';
 import { UsersModule } from './modules/users/users.module';
 import { WalletsModule } from './modules/wallets/wallets.module';
-import { ReferralsModule } from './modules/referrals/referrals.module';
 import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
-import { PaymentGatewayModule } from './modules/payment-gateway/payment-gateway.module';
 
 @Module({
   imports: [
@@ -126,6 +127,7 @@ import { PaymentGatewayModule } from './modules/payment-gateway/payment-gateway.
     QuestionsInjectionModule,
     PaymentsModule,
     WalletsModule,
+    UserSessionModule,
     TransactionsModule,
     AccountsModule,
     ReferralsModule,

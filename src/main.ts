@@ -89,7 +89,7 @@ async function bootstrap() {
   // Enable Swagger Docs
   const config = new DocumentBuilder()
     .setTitle('Q and A API Documentation')
-    .setDescription('API documentation for questions and answers application')
+    .setDescription('API documentation for questions and answers application.')
     .setVersion('1.0')
     .addTag('auth', 'Authentication related endpoints.')
     .addTag('users', 'User management endpoints')
