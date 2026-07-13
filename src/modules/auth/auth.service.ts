@@ -43,7 +43,6 @@ export class AuthService {
     private tokensRepository: TokensRepository,
     private mailService: MailService,
     private userSessionService: UserSessionService,
-
     private refreshTokensService: RefreshTokensService,
   ) {}
   async registerUser(registerUserDto: RegisterUserDto) {
@@ -72,6 +71,8 @@ export class AuthService {
     };
 
     const newUser = await this.usersRepository.create(payload);
+
+    console.log('newUser:', newUser);
 
     const token = generateCode(6);
     const input = {
@@ -320,12 +321,14 @@ export class AuthService {
       const userId = user._id.toString();
 
       let session;
+      const role = user.role;
 
       try {
         session = await this.userSessionService.handleLogin({
           userId,
           deviceId,
           deviceName,
+          role,
         });
       } catch (err) {
         if (err instanceof ConflictException) {
@@ -572,7 +575,7 @@ export class AuthService {
     const payload = { sub: id, email, role, plans };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '1d',
+      expiresIn: '15m',
     });
 
     return accessToken;
