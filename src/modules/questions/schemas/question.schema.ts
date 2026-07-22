@@ -37,7 +37,7 @@ export class Segment {
 
   @Prop({
     type: [String],
-    enum: TextStyle, // 🔥 IMPORTANT: enforce enum
+    enum: TextStyle, // IMPORTANT: enforce enum
     default: [],
   })
   styles?: TextStyle[];
@@ -65,6 +65,15 @@ class Graph {
 }
 
 @Schema({ _id: false })
+class Image {
+  @Prop()
+  url?: string;
+
+  @Prop()
+  publicUrl?: string;
+}
+
+@Schema({ _id: false })
 export class ContentBlock {
   @Prop({
     required: true,
@@ -85,8 +94,8 @@ export class ContentBlock {
 
   /* -------- IMAGE -------- */
 
-  @Prop()
-  url?: string;
+  @Prop({ type: Image, default: null })
+  image?: Image;
 
   @Prop()
   alt?: string;
@@ -135,12 +144,6 @@ export class Option {
 
   @Prop({ required: true })
   value!: string;
-
-  // @Prop({ default: false })
-  // isCorrect?: boolean;
-
-  // @Prop()
-  // explanation?: string;
 }
 
 @Schema({ timestamps: true })
@@ -163,6 +166,9 @@ export class Question {
 
   @Prop({ required: true, trim: true })
   question!: string;
+
+  @Prop()
+  imageId?: string;
 
   // Link to passage instead of storing text
   @Prop({ type: Types.ObjectId, ref: 'Passage', default: null })
