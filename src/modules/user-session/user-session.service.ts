@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { SessionGateway } from '../socket/socket.gateway';
 import { Role } from '../users/schemas/user.schema';
 import { CreateSessionDto } from './dtos/create-session.dto';
 import { ForceSwitchDto } from './dtos/force-switch.dto';
@@ -12,7 +13,10 @@ import { UserSessionRepository } from './repositories/user-session.repository';
 
 @Injectable()
 export class UserSessionService {
-  constructor(private readonly repo: UserSessionRepository) {}
+  constructor(
+    private readonly sessionGateway: SessionGateway,
+    private readonly repo: UserSessionRepository,
+  ) {}
 
   async findActiveSession(userId: string) {
     const response = await this.repo.findActiveSession(
@@ -126,25 +130,28 @@ export class UserSessionService {
     );
     console.log('existingSession:', existingSession);
 
-    if (existingSession) {
-      return this.repo.updateSession(existingSession._id.toString(), {
-        lastActiveAt: new Date(),
-        isActive: true,
-      });
-    }
-
     if (dto.role === Role.ADMIN) {
-      return this.repo.createSession({
+      if (existingSession) {
+        return await this.repo.updateSession(existingSession._id.toString(), {
+          lastActiveAt: new Date(),
+          isActive: true,
+        });
+      }
+
+      return await this.repo.createSession({
         ...payload,
         isActive: true,
         lastActiveAt: new Date(),
       });
     }
 
-    const activeSessions = await this.repo.findActiveSession(payload.userId);
+    const activeSessions = await this.repo.findActiveSessionsExcludingDevice(
+      payload.userId,
+      payload.deviceId,
+    );
 
     // No active session
-    if (activeSessions.length > 0) {
+    if (activeSessions && activeSessions.length > 0) {
       throw new ConflictException({
         message: 'You are logged in on another device',
         action: 'FORCE_SWITCH_REQUIRED',
@@ -152,7 +159,14 @@ export class UserSessionService {
       });
     }
 
-    return this.repo.createSession({
+    if (existingSession) {
+      return await this.repo.updateSession(existingSession._id.toString(), {
+        lastActiveAt: new Date(),
+        isActive: true,
+      });
+    }
+
+    return await this.repo.createSession({
       ...payload,
       isActive: true,
       lastActiveAt: new Date(),
@@ -169,8 +183,10 @@ export class UserSessionService {
     // Deactivate all sessions
     await this.repo.deactivateSessions(payload.userId);
 
+    this.sessionGateway.notifySessionTerminated(dto.userId);
+
     // Create new session
-    return this.repo.createSession({
+    return await this.repo.createSession({
       ...payload,
       isActive: true,
       lastActiveAt: new Date(),

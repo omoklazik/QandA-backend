@@ -15,6 +15,7 @@ import { QuestionsInjectionModule } from './modules/questions-injection/question
 import { QuestionsModule } from './modules/questions/questions.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { RefreshTokensModule } from './modules/refresh-tokens/refresh-tokens.module';
+import { SocketModule } from './modules/socket/socket.module';
 import { SubjectsModule } from './modules/subjects/subjects.module';
 import { TokensModule } from './modules/tokens/tokens.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
@@ -127,12 +128,13 @@ import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
     QuestionsInjectionModule,
     PaymentsModule,
     WalletsModule,
-    UserSessionModule,
     TransactionsModule,
     AccountsModule,
     ReferralsModule,
     WithdrawalsModule,
     PaymentGatewayModule,
+    UserSessionModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],
