@@ -3,44 +3,51 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { PlanCode } from '../../modules/plans/schemas/plan.schema';
 
 @Injectable()
 export class PlansGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    console.log('I want to run PlansGuard');
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    const plan =
-      request.params?.plan || request.body?.plan || request.query?.plan;
-
     if (!user) {
-      throw new ForbiddenException({
-        message: 'User not found',
+      throw new UnauthorizedException({
+        message: 'Authentication required',
         success: false,
-        status: 403,
+        status: 401,
       });
     }
+
+    const plan = (
+      request.params?.plan ||
+      request.body?.plan ||
+      request.query?.plan
+    )
+      ?.toString()
+      .toUpperCase();
 
     if (!plan) {
       throw new ForbiddenException({
-        message: 'Plan not found',
+        message: 'Plan parameter is required.',
         success: false,
         status: 403,
       });
     }
 
-    const plans = ['SECONDARY', 'TERTIARY', 'OTHERS'];
+    const userPlans: PlanCode[] = user.plans || [];
 
-    const hasPlan = user.plans.some((p) => p === plan);
-    // const hasPlan = plans.some((p) => p === plan);
+    const hasPlan = userPlans.some((p) => p.toUpperCase() === plan);
 
     if (!hasPlan) {
       throw new ForbiddenException({
-        message: 'You do not have access to this plan',
+        message: `You do not have active access to the ${plan} plan`,
         success: false,
         status: 403,
       });

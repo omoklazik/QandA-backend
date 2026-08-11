@@ -11,6 +11,7 @@ import { AccountsModule } from './modules/accounts/accounts.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentGatewayModule } from './modules/payment-gateway/payment-gateway.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PlansModule } from './modules/plans/plans.module';
 import { QuestionsInjectionModule } from './modules/questions-injection/questions-injection.module';
 import { QuestionsModule } from './modules/questions/questions.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
@@ -135,6 +136,7 @@ import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
     PaymentGatewayModule,
     UserSessionModule,
     SocketModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],

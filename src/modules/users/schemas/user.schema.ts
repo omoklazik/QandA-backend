@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { PlanCode } from '../../plans/schemas/plan.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -7,18 +8,6 @@ export enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
 }
-
-export enum Plan {
-  SECONDARY = 'SECONDARY',
-  TERTIARY = 'TERTIARY',
-  OTHERS = 'OTHERS',
-}
-
-export const PLAN_PRICES: Record<Plan, number> = {
-  [Plan.SECONDARY]: 2000,
-  [Plan.TERTIARY]: 3000,
-  [Plan.OTHERS]: 5000,
-};
 
 @Schema({ timestamps: true })
 export class User {
@@ -33,9 +22,6 @@ export class User {
 
   @Prop({ required: true })
   firstName!: string;
-
-  @Prop({})
-  lastForcedSwitchAt?: Date;
 
   @Prop({ required: true })
   lastName!: string;
@@ -70,12 +56,15 @@ export class User {
   @Prop({ default: false })
   hasPaid!: boolean;
 
+  @Prop({})
+  lastForcedSwitchAt!: Date;
+
   @Prop({
     type: [String],
-    enum: Plan,
+    enum: PlanCode,
     default: [],
   })
-  plans!: Plan[];
+  plans!: PlanCode[];
 
   @Prop({
     type: {
