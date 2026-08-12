@@ -10,7 +10,6 @@ import { Queue } from 'bull';
 import { AppModule } from './app.module';
 import { MongoExceptionFilter } from './common/filters/mongo-exception.filter';
 import { GlobalResponseInterceptor } from './common/interceptor/global-response.interceptor';
-import { QuestionsRepository } from './modules/questions/repositories/questions.repository';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,11 +26,17 @@ async function bootstrap() {
   const serverAdapter = new ExpressAdapter();
   serverAdapter.setBasePath('/admin/queues');
 
-  const repo = app.get(QuestionsRepository);
+  // const repo = app.get(QuestionsRepository);
   // await repo.changeExamYearByExamIds(examIds);
 
-  // const repo = app.get(WalletsRepository);
-  // await repo.createWallet('69b6e93307f1bf73531171cb');
+  // const query = {
+  //   page: 1,
+  //   searchParams: '',
+  //   limit: 20,
+  // };
+
+  // const repo = app.get(SubjectsRepository);
+  // await repo.findAll(query);
 
   // Create Bull Board
   const { addQueue, removeQueue, replaceQueues } = createBullBoard({
@@ -83,13 +88,13 @@ async function bootstrap() {
 
   const serverUrl =
     process.env.NODE_ENV === 'production'
-      ? 'https://qanda-backend-d58u.onrender.com'
+      ? 'https://qanda-backend-1bj1.onrender.com'
       : `http://localhost:${port}`;
 
   // Enable Swagger Docs
   const config = new DocumentBuilder()
     .setTitle('Q and A API Documentation')
-    .setDescription('API documentation for questions and answers application.')
+    .setDescription('API documentation for questions and answers application')
     .setVersion('1.0')
     .addTag('auth', 'Authentication related endpoints.')
     .addTag('users', 'User management endpoints')

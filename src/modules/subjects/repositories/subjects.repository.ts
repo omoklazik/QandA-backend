@@ -58,15 +58,9 @@ export class SubjectsRepository {
       }
     }
 
-    const subjects = await query.sort({ createdAt: -1 });
+    const subjects = await query.sort({ hasFreePractice: -1 });
 
-    // if (subjects.length === 0) {
-    //   throw new NotFoundException({
-    //     message: 'Subjects not found',
-    //     success: false,
-    //     status: 404,
-    //   });
-    // }
+    console.log('subjects:', subjects);
 
     const response = {
       subjectObj: subjects,
@@ -150,4 +144,27 @@ export class SubjectsRepository {
 
     return subject;
   }
+
+  // async updateFreePracticeSubjects() {
+  //   // Set all subjects to false first
+  //   await this.subjectModel.updateMany(
+  //     {},
+  //     { $set: { hasFreePractice: false } },
+  //   );
+
+  //   // Set Mathematics and English to true
+  //   const result = await this.subjectModel.updateMany(
+  //     {
+  //       name: {
+  //         $in: ['mathematics', 'english'],
+  //       },
+  //     },
+  //     { $set: { hasFreePractice: true } },
+  //   );
+
+  //   return {
+  //     message: 'Subject free practice status updated successfully',
+  //     updatedCount: result.modifiedCount,
+  //   };
+  // }
 }
