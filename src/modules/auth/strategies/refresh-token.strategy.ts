@@ -30,7 +30,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: { sub: string; email: string }) {
+  async validate(
+    req: Request,
+    payload: { sub: string; email: string; sessionId: string },
+  ) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -81,6 +84,11 @@ export class RefreshTokenStrategy extends PassportStrategy(
 
     console.log('users:', user);
 
-    return { _id: user._id, email: user.email, role: user.role };
+    return {
+      sub: user._id,
+      email: user.email,
+      role: user.role,
+      plans: user.plans,
+    };
   }
 }
