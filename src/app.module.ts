@@ -9,6 +9,7 @@ import configuration from './config/configuration';
 import { MailModule } from './mail/mail.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CompanyWalletModule } from './modules/company-wallet/company-wallet.module';
 import { PaymentGatewayModule } from './modules/payment-gateway/payment-gateway.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PlansModule } from './modules/plans/plans.module';
@@ -137,6 +138,7 @@ import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
     UserSessionModule,
     SocketModule,
     PlansModule,
+    CompanyWalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],
